@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import Category from './Category.js';
 
 const ProductTree = () => {
-  // Ensure the state path matches your Redux state structure
   const categories = useSelector((state) => state.products.categories);
 
   return (
