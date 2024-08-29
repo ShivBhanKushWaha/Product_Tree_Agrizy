@@ -13,6 +13,8 @@
     "ajv-keywords": "^3.5.2",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",
+    "react-dnd": "^14.0.2",
+    "react-dnd-html5-backend": "^14.0.2",
     "react-dom": "^18.3.1",
     "react-redux": "^9.1.2",
     "react-scripts": "5.0.1",

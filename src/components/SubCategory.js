@@ -1,33 +1,63 @@
 import React, { useState } from 'react';
 import Product from './Product';
 
-const Subcategory = ({ subcategory, categoryId, onAddProduct, onDeleteProduct, onEditProduct }) => {
+const Subcategory = ({
+    subcategory,
+    categoryId,
+    onAddProduct,
+    onDeleteProduct,
+    onEditProduct,
+    onMoveProduct, // Add this prop
+}) => {
     const [newProductName, setNewProductName] = useState('');
 
     const handleAddProduct = () => {
-        if (newProductName.trim()) {
-            const newProduct = { id: Date.now(), name: newProductName };
-            onAddProduct(categoryId, subcategory.id, newProduct); // Ensure this is being used correctly
-            setNewProductName('');
+        if (newProductName.trim() === '') {
+            alert("Product names are required.");
+            return;
+        }
+        const newProduct = { id: Date.now(), name: newProductName };
+        onAddProduct(categoryId, subcategory.id, newProduct);
+        setNewProductName('');
+    };
+
+    const handleDragOver = (event) => {
+        event.preventDefault();
+    };
+
+    const handleDrop = (event) => {
+        event.preventDefault();
+        const productId = event.dataTransfer.getData('productId');
+        const sourceCategoryId = event.dataTransfer.getData('categoryId');
+        const sourceSubcategoryId = event.dataTransfer.getData('subcategoryId');
+
+        if (sourceCategoryId !== categoryId || sourceSubcategoryId !== subcategory.id) {
+            onMoveProduct(productId, sourceCategoryId, sourceSubcategoryId, categoryId, subcategory.id);
         }
     };
 
     return (
-        <div className="bg-gray-400 p-4 rounded mb-4">
+        <div
+            className="bg-gray-400 p-4 rounded mb-4"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+        >
             <h3 className="text-xl font-bold mb-2">{subcategory.name}</h3>
             <div className='flex sm:flex-row flex-col gap-2 py-1 flex-wrap'>
-                {subcategory.products.map((product) => (
-                    <Product
-                        key={product.id}
-                        product={product}
-                        categoryId={categoryId}
-                        subcategoryId={subcategory.id}
-                        onDeleteProduct={onDeleteProduct}
-                        onEditProduct={onEditProduct}
-                    />
+                {subcategory.products.map((product, index) => (
+                    <React.Fragment>
+                        <Product
+                            key={product.id}
+                            product={product}
+                            categoryId={categoryId}
+                            subcategoryId={subcategory.id}
+                            onDeleteProduct={onDeleteProduct}
+                            onEditProduct={onEditProduct}
+                        />
+                    </React.Fragment>
                 ))}
             </div>
-            <div className=" flex flex-col items-center justify-center sm:items-start sm:justify-start">
+            <div className="flex flex-col items-center justify-center sm:items-start sm:justify-start mt-4">
                 <h4 className="text-lg font-semibold">Add New Product</h4>
                 <div className="flex items-center mb-2 sm:flex-row flex-col gap-2">
                     <input
