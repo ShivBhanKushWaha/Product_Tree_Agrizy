@@ -1,29 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrashAlt, faSave } from '@fortawesome/free-solid-svg-icons';
 
-const Product = ({ product, categoryId, onEdit, onDelete, onDragStart }) => {
-  const handleDragStart = (event) => {
-    onDragStart(event, product.id);
+const Product = ({ product, categoryId, subcategoryId, onDeleteProduct, onEditProduct }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProductName, setEditedProductName] = useState(product.name);
+
+  const handleEdit = () => {
+    onEditProduct(categoryId, subcategoryId, { ...product, name: editedProductName });
+    setIsEditing(false);
   };
 
   return (
-    <div
-      className="product p-3 bg-gray-100 rounded flex justify-between items-center shadow-sm hover:shadow-md transition-shadow duration-200"
-      draggable
-      onDragStart={handleDragStart}
-    >
-      <span className="text-gray-700">{product.name || 'Unnamed Product'}</span>
-      <div className="space-x-2">
+    <div className="flex items-center justify-between mb-2 bg-red-300 rounded px-4 py-2">
+      {isEditing ? (
+        <input
+          type="text"
+          value={editedProductName}
+          onChange={(e) => setEditedProductName(e.target.value)}
+          className="border rounded flex-grow px-2 py-1 mr-2 outline-none"
+        />
+      ) : (
+        <span className='text-base mr-2 text-white'>{product.name}</span>
+      )}
+      <div className="flex items-center justify-center flex-row gap-2">
+        {isEditing ? (
+          <button
+            onClick={handleEdit}
+          >
+            <FontAwesomeIcon icon={faSave} color='black' />
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsEditing(true)}
+          >
+            <FontAwesomeIcon icon={faEdit} color='black' />
+          </button>
+        )}
         <button
-          onClick={() => onEdit(product)}
-          className="text-blue-500 hover:text-blue-700 transition-colors"
+          onClick={() => onDeleteProduct(categoryId, subcategoryId, product.id)}
         >
-          Edit
-        </button>
-        <button
-          onClick={() => onDelete(product.id)}
-          className="text-red-500 hover:text-red-700 transition-colors"
-        >
-          Delete
+          <FontAwesomeIcon icon={faTrashAlt} color='black' />
         </button>
       </div>
     </div>

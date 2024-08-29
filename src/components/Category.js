@@ -1,112 +1,119 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import Product from './Product.js';
-import { addProduct, editProduct, deleteProduct, moveProduct } from '../Store/actions/productActions.js';
-
-const Category = ({ category }) => {
+import Subcategory from './SubCategory';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrashAlt, faSave } from '@fortawesome/free-solid-svg-icons';
+const Category = ({
+  category,
+  onDeleteProduct,
+  onEditProduct,
+  onAddSubcategoryWithProduct,
+  onEditCategory,
+  onDeleteCategory,
+  onDeleteSubcategory,
+  onAddProduct
+}) => {
+  const [newSubcategoryName, setNewSubcategoryName] = useState('');
   const [newProductName, setNewProductName] = useState('');
-  const [editingProductId, setEditingProductId] = useState(null);
-  const [editingProductName, setEditingProductName] = useState('');
-  const dispatch = useDispatch();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedCategoryName, setEditedCategoryName] = useState(category.name);
 
-  const handleAddProduct = () => {
-    if (newProductName.trim() === '') return;
-    const newProduct = {
-      id: Date.now(), // Generate a unique ID for the new product
-      name: newProductName,
-    };
-    dispatch(addProduct(category.id, newProduct));
-    setNewProductName(''); // Reset input field
+  const handleAddSubcategoryWithProduct = () => {
+    const newSubcategory = { id: Date.now(), name: newSubcategoryName };
+    const newProduct = { id: Date.now() + 1, name: newProductName };
+    onAddSubcategoryWithProduct(category.id, newSubcategory, newProduct);
+    setNewSubcategoryName('');
+    setNewProductName('');
   };
 
-  const handleEditProduct = (product) => {
-    setEditingProductId(product.id);
-    setEditingProductName(product.name);
+  const handleEditCategory = () => {
+    const updatedCategory = { ...category, name: editedCategoryName };
+    onEditCategory(updatedCategory);
+    setIsEditing(false);
   };
 
-  const handleSaveEditProduct = () => {
-    if (editingProductId) {
-      dispatch(editProduct(category.id, editingProductId, { id: editingProductId, name: editingProductName }));
-      setEditingProductId(null);
-      setEditingProductName(''); // Reset input field
-    }
-  };
-
-  const handleDeleteProduct = (productId) => {
-    dispatch(deleteProduct(category.id, productId));
-  };
-
-  const handleDragStart = (event, productId) => {
-    event.dataTransfer.setData('productId', productId);
-    event.dataTransfer.setData('sourceCategoryId', category.id);
-  };
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    const productId = event.dataTransfer.getData('productId');
-    const sourceCategoryId = parseInt(event.dataTransfer.getData('sourceCategoryId'), 10);
-
-    if (sourceCategoryId !== category.id) {
-      dispatch(moveProduct(sourceCategoryId, category.id, parseInt(productId, 10)));
-    }
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault(); // Necessary to allow dropping
+  const handleDeleteSubcategory = (subcategoryId) => {
+    onDeleteSubcategory(category.id, subcategoryId);
   };
 
   return (
-    <div
-      className="category p-4 bg-white shadow-md rounded-lg mb-6"
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-    >
-      <h2 className="text-xl font-semibold text-gray-700 mb-4">{category.name}</h2>
-      <div className="products space-y-3">
-        {category.products.map((product) => (
-          <Product
-            key={product.id}
-            product={product}
-            categoryId={category.id}
-            onEdit={handleEditProduct}
-            onDelete={handleDeleteProduct}
-            onDragStart={(e) => handleDragStart(e, product.id)}
-          />
-        ))}
-      </div>
-      <div className="add-product mt-4 flex space-x-2">
-        <input
-          type="text"
-          value={newProductName}
-          onChange={(e) => setNewProductName(e.target.value)}
-          placeholder="New Product Name"
-          className="flex-1 p-2 border border-gray-300 rounded"
-        />
-        <button
-          onClick={handleAddProduct}
-          className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 transition-colors"
-        >
-          Add Product
-        </button>
-      </div>
-      {editingProductId && (
-        <div className="edit-product mt-4">
+    <div className="bg-gray-600 shadow-md rounded-lg px-2 py-3 mb-6">
+      <div className="flex justify-between items-center">
+        {isEditing ? (
           <input
             type="text"
-            name={newProductName}
-            value={editingProductName}
-            onChange={(e) => setEditingProductName(e.target.value)}
-            placeholder="Edit Product Name"
-            className="p-2 border border-gray-300 rounded"
+            value={editedCategoryName}
+            onChange={(e) => setEditedCategoryName(e.target.value)}
+            className="border rounded px-2 py-1 flex-grow mr-2"
           />
+        ) : (
+          <h2 className="text-2xl text-white font-bold mb-4">{category.name}</h2>
+        )}
+        <div className='flex flex-row gap-2'>
+          {isEditing ? (
+            <button
+              onClick={handleEditCategory}
+            >
+              <FontAwesomeIcon icon={faSave} color='white' />
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsEditing(true)}
+            >
+              <FontAwesomeIcon icon={faEdit} color='white' />
+            </button>
+          )}
           <button
-            onClick={handleSaveEditProduct}
-            className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition-colors"
+            onClick={() => onDeleteCategory(category.id)}
           >
-            Save
+            <FontAwesomeIcon icon={faTrashAlt} color='white' />
           </button>
         </div>
-      )}
+      </div>
+      {category.subcategories.map((subcategory) => (
+        <div key={subcategory.id} className="bg-gray-50 px-2 py-1 mb-4 rounded">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-bold mb-2">{subcategory.name}</h3>
+            <button
+              onClick={() => handleDeleteSubcategory(subcategory.id)}
+            >
+              <FontAwesomeIcon icon={faTrashAlt} color='black' />
+            </button>
+          </div>
+          <Subcategory
+            onAddProduct={onAddProduct}
+            subcategory={subcategory}
+            categoryId={category.id}
+            onDeleteProduct={onDeleteProduct}
+            onEditProduct={onEditProduct}
+          />
+        </div>
+      ))}
+      <div className="mt-4 flex flex-col items-center justify-center sm:items-start sm:justify-start">
+        <h4 className="text-lg font-semibold mb-2 text-white text-center sm:text-left">Add New Subcategory and Product</h4>
+        <div className="mb-2 flex sm:flex-row flex-col gap-2">
+          <input
+            type="text"
+            value={newSubcategoryName}
+            onChange={(e) => setNewSubcategoryName(e.target.value)}
+            className="border rounded px-2 py-1 mb-2 outline-none"
+            placeholder="Subcategory name"
+          />
+          <input
+            type="text"
+            value={newProductName}
+            onChange={(e) => setNewProductName(e.target.value)}
+            className="border rounded px-2 py-1  mb-2 outline-none"
+            placeholder="Product name"
+          />
+
+        </div>
+        <button
+          onClick={handleAddSubcategoryWithProduct}
+          className="bg-blue-500 text-white rounded px-2 py-1 "
+        >
+          Add Subcategory
+        </button>
+      </div>
     </div>
   );
 };
